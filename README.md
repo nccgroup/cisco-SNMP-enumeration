@@ -18,7 +18,7 @@ Installing
 
 How To Use	
 =======================
-    ./frogger.sh
+    ./cisc0wn.sh
 
 
 Features	
