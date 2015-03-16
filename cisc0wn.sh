@@ -111,6 +111,7 @@ if [ -f $COM_PASS1 ]
     else    
         echo ""
         echo -e "\e[00;31mUnable to find the community strings file\e[00m"
+        exit 1
 fi
 
 
