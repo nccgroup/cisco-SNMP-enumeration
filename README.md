@@ -9,6 +9,8 @@ Developed by Daniel Compton, daniel dot compton at nccgroup dot com
 
 Fixed and updated by Tom Watson, tom dot watson at nccgroup dot com
 
+Minor Comit by Darren McDonald, darren dot mcdonald at nccgroup dot com
+
 https://github.com/nccgroup/cisco-SNMP-enumeration
 
 Released under AGPL see LICENSE for more information
@@ -50,5 +52,6 @@ Screen Shot
 Change Log
 =======================
 
+Version 1.7 - Syntax error causing bug when no enable secrets in config file corrected
 Version 1.6 - Updated to reflect changes in metasploit filesystem use, made grep case insensitive to avoid false negatives, added new location for community string file & moved from the deprecated msfcli to msfconsole -x syntax
 Version 1.5 - Official release.

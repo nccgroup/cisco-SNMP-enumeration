@@ -6,7 +6,7 @@
 # Twitter = @commonexploits
 # 29/05/2012
 # Requires metasploit, snmpwalk and john the ripper - suggest backtrack as built in (tested on BT5)
-VERSION="1.6" # updated 15/03/15 by tom dot watson @ nccgroup dot com - See README for details 
+VERSION="1.7" # updated 16/03/15 by darren dot mcdonald @ nccgroup dot com - See README for details 
 
 #####################################################################################
 # Released as open source by NCC Group Plc - http://www.nccgroup.com/
@@ -741,7 +741,7 @@ if [ -z "$SECPW5" ]
 then
 	echo -e "\e[1;33m-----------------------------------------------------------------\e[00m"
 	echo "I can't find a type 5 enable secret password. Perhaps one is not set"
-	eecho -e "\e[1;33m-----------------------------------------------------------------\e[00m"
+	echo -e "\e[1;33m-----------------------------------------------------------------\e[00m"
 	exit 1
 else
 echo -e "\e[1;33m-----------------------------------------------------------------\e[00m"
