@@ -3,6 +3,8 @@ Cisc0wn - Cisco SNMP Script
 
 Cisco SNMP enumeration, brute force, config downloader and password cracking script.
 
+Tested and designed to work against Cisco IOS Switches and Routers.
+
 Released as open source by NCC Group Plc - http://www.nccgroup.com/
 
 Developed by Daniel Compton, daniel dot compton at nccgroup dot com
