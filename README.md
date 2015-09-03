@@ -13,6 +13,8 @@ Fixed and updated by Tom Watson, tom dot watson at nccgroup dot com
 
 Minor Comit by Darren McDonald, darren dot mcdonald at nccgroup dot com
 
+Updated by Jason Soto, jason_soto at jsitech dot com
+
 https://github.com/nccgroup/cisco-SNMP-enumeration
 
 Released under AGPL see LICENSE for more information
@@ -44,6 +46,8 @@ Requirements
 
 Tested on Backtrack 5 and Kali.
 
+New Version Tested in Kali Sana
+
 
 Screen Shot    
 =======================
@@ -54,6 +58,7 @@ Screen Shot
 Change Log
 =======================
 
+Version 1.8 - Syntax Error in msfconsole Commands Corrected, Part of the Script still using msfcli moved to msfconsole, Updated commands and john password list locations
 Version 1.7 - Syntax error causing bug when no enable secrets in config file corrected
 Version 1.6 - Updated to reflect changes in metasploit filesystem use, made grep case insensitive to avoid false negatives, added new location for community string file & moved from the deprecated msfcli to msfconsole -x syntax
 Version 1.5 - Official release.

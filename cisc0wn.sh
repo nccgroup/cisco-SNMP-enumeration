@@ -6,13 +6,15 @@
 # Twitter = @commonexploits
 # 29/05/2012
 # Requires metasploit, snmpwalk and john the ripper - suggest backtrack as built in (tested on BT5)
-VERSION="1.7" # updated 16/03/15 by darren dot mcdonald @ nccgroup dot com - See README for details
+VERSION="1.8" # updated 16/03/15 by darren dot mcdonald @ nccgroup dot com - See README for details
+# updated 03/09/2015 by Jason Soto, jason_soto at jsitech dot com - SEE README
 
 #####################################################################################
 # Released as open source by NCC Group Plc - http://www.nccgroup.com/
 
 # Developed by Daniel Compton, daniel dot compton at nccgroup dot com
 # Updated by tom.watson @ nccgroup.com
+# Updated by Jason Soto, jason_soto@jsitech.com
 
 # https://github.com/nccgroup/cisco-SNMP-enumeration
 
